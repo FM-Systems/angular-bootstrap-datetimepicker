@@ -158,6 +158,14 @@
 
           result.dates.push(new DateObject(dateValue))
         }
+        var newArray = [];
+        var i,j,temparray,chunk = 4;
+        for (i=0,j=result.dates.length; i<j; i+=chunk) {
+            temparray = result.dates.slice(i,i+chunk);
+            newArray.push(temparray);
+        }
+
+        result.dates = newArray;
 
         return result
       }
@@ -188,12 +196,21 @@
           var dateValue = {
             'active': monthMoment.format(monthFormat) === activeFormat,
             'current': monthMoment.format(monthFormat) === currentFormat,
-            'display': monthMoment.format('MMM'),
+            'display': monthMoment.format('MMMM'),
             'utcDateValue': monthMoment.valueOf()
           }
 
           result.dates.push(new DateObject(dateValue))
         }
+
+        var newArray = [];
+        var i,j,temparray,chunk = 4;
+        for (i=0,j=result.dates.length; i<j; i+=chunk) {
+            temparray = result.dates.slice(i,i+chunk);
+            newArray.push(temparray);
+        }
+
+        result.dates = newArray;
 
         return result
       }
@@ -216,7 +233,7 @@
           'nextView': configuration.minView === 'day' ? 'setTime' : 'hour',
           'previousViewDate': new DateObject({
             utcDateValue: previousViewDate.valueOf(),
-            display: startOfMonth.format('YYYY-MMM')
+            display: startOfMonth.format('MMMM')
           }),
           'leftDate': new DateObject({utcDateValue: moment.utc(startOfMonth).subtract(1, 'months').valueOf()}),
           'rightDate': new DateObject({utcDateValue: moment.utc(startOfMonth).add(1, 'months').valueOf()}),
@@ -225,7 +242,7 @@
         }
 
         for (var dayNumber = 0; dayNumber < 7; dayNumber += 1) {
-          result.dayNames.push(moment.utc().weekday(dayNumber).format('dd'))
+          result.dayNames.push(moment.utc().weekday(dayNumber).format('ddd'))
         }
 
         for (var i = 0; i < 6; i += 1) {
@@ -238,6 +255,7 @@
               'display': dayMoment.format('D'),
               'future': dayMoment.isAfter(endOfMonth),
               'past': dayMoment.isBefore(startOfMonth),
+              'selectable': daySelectable(dayMoment),
               'utcDateValue': dayMoment.valueOf()
             }
             week.dates.push(new DateObject(dateValue))
@@ -246,6 +264,10 @@
         }
 
         return result
+      }
+
+      function daySelectable(m) {
+        return !(m.weekday() === 0 || m.weekday() === 6 || (m.year() <= moment().year() && m.dayOfYear() < moment().dayOfYear()))
       }
 
       function hourModelFactory (milliseconds) {
@@ -269,24 +291,37 @@
           'dates': []
         }
 
-        for (var i = 0; i < 24; i += 1) {
-          var hourMoment = moment.utc(selectedDate).add(i, 'hours')
+        for (var i = 5; i < 20; i += 1) {
+          var hourMoment = moment(selectedDate).local().startOf('day').add(i, 'hours')
           var dateValue = {
             'active': hourMoment.format(hourFormat) === activeFormat,
             'current': hourMoment.format(hourFormat) === currentFormat,
             'display': hourMoment.format('LT'),
-            'utcDateValue': hourMoment.valueOf()
+            'utcDateValue': hourMoment.valueOf(),
+            'selectable': hourSelectable(hourMoment)
           }
 
           result.dates.push(new DateObject(dateValue))
         }
+        var newArray = [];
+        var i,j,temparray,chunk = 4;
+        for (i=0,j=result.dates.length; i<j; i+=chunk) {
+            temparray = result.dates.slice(i,i+chunk);
+            newArray.push(temparray);
+        }
+
+        result.dates = newArray;
 
         return result
       }
 
+      function hourSelectable(m) {
+        return !m.add(1, 'hours').isBefore(moment().local());
+      }
+
       function minuteModelFactory (milliseconds) {
-        var selectedDate = moment.utc(milliseconds).startOf('hour')
-        var previousViewDate = moment.utc(selectedDate).startOf('day')
+        var selectedDate = moment(milliseconds).local().startOf('hour')
+        var previousViewDate = selectedDate
 
         var minuteFormat = 'YYYY-MM-DD H:mm'
         var activeFormat = formatValue(ngModelController.$modelValue, minuteFormat)
@@ -308,30 +343,43 @@
         var limit = 60 / configuration.minuteStep
 
         for (var i = 0; i < limit; i += 1) {
-          var hourMoment = moment.utc(selectedDate).add(i * configuration.minuteStep, 'minute')
+          var hourMoment = moment(selectedDate).local().add(i * configuration.minuteStep, 'minute')
           var dateValue = {
             'active': hourMoment.format(minuteFormat) === activeFormat,
             'current': hourMoment.format(minuteFormat) === currentFormat,
             'display': hourMoment.format('LT'),
-            'utcDateValue': hourMoment.valueOf()
+            'utcDateValue': hourMoment,
+            'selectable': minuteSelectable(hourMoment)
           }
 
           result.dates.push(new DateObject(dateValue))
         }
+        var newArray = [];
+        var i,j,temparray,chunk = 4;
+        for (i=0,j=result.dates.length; i<j; i+=chunk) {
+            temparray = result.dates.slice(i,i+chunk);
+            newArray.push(temparray);
+        }
+
+        result.dates = newArray;
 
         return result
       }
 
+      function minuteSelectable(m) {
+        return !m.isBefore(moment().local());
+      }
+
       function setTime (milliseconds) {
         var tempDate = new Date(milliseconds)
-        var newDate = new Date(tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate(), tempDate.getUTCHours(), tempDate.getUTCMinutes(), tempDate.getUTCSeconds(), tempDate.getUTCMilliseconds())
+        var newDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate(), tempDate.getHours(), tempDate.getMinutes(), tempDate.getSeconds(), tempDate.getMilliseconds())
 
         switch (configuration.modelType) {
           case 'Date':
             // No additional work needed
             break
           case 'moment':
-            newDate = moment([tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate(), tempDate.getUTCHours(), tempDate.getUTCMinutes(), tempDate.getUTCSeconds(), tempDate.getUTCMilliseconds()])
+            newDate = milliseconds
             break
           case 'milliseconds':
             newDate = milliseconds
@@ -380,7 +428,7 @@
        */
 
       function getMoment (modelValue) {
-        return moment(modelValue, angular.isString(modelValue) ? configuration.parseFormat : undefined)
+        return moment(modelValue, angular.isString(modelValue) ? "DD/MM/YYYY HH:mm" : undefined)
       }
 
       /**
@@ -575,4 +623,4 @@
       }
     }
   }
-})); // eslint-disable-line semi
+}))

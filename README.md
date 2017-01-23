@@ -20,9 +20,6 @@ Native AngularJS datetime picker directive styled by Twitter Bootstrap 3
 
 [Home / demo page](http://dalelotts.github.io/angular-bootstrap-datetimepicker/)
 
-## Support the project
-I know this is a tiny directive but many people use it in production (high 5 to all of us) - if you happen to use this directive please click the star button (at the top of the page) - it means a lot to all the contributors.
-
 ## Upgrading from 0.4.0 or earlier
 
 The template used by this directive has been separated from the directive to allow the developer to override
@@ -42,7 +39,7 @@ display of a date in an input box or allow users to enter a valid date with the 
 
 # Bower
 
-This project no longer supports bower. If you are using wiredep, you can add the following to your 
+This project no longer supports bower. If you are using wiredep, you can dd the following to your 
 bower.json file to allow wiredep to use this directive.
 
 ```json
