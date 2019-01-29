@@ -267,7 +267,7 @@
       }
 
       function daySelectable(m) {
-        return !(m.weekday() === 0 || m.weekday() === 6 || (m.year() <= moment().year() && m.dayOfYear() < moment().dayOfYear()))
+        return !((m.year() <= moment().year() && m.dayOfYear() < moment().dayOfYear()))
       }
 
       function hourModelFactory (milliseconds) {
